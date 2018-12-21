@@ -11,5 +11,8 @@ https://ankiweb.net/shared/info/323586997
 Sends a signal to ReMemorize to reschedule these cards.  
 Will not affect cards that are already buried.
 
+### rememorize_log
+Log ReMemorize reschedules
+
 ### rememorize_min_days, rememorize_max_days
 min & max fuzz day range

@@ -51,10 +51,11 @@ class ThreeFeetUnder:
         if toBury:
             rememorize=self.config.get('use_rememorize_to_reschedule',False)
             if rememorize:
+                log=self.config.get('rememorize_log',True)
                 min_days=self.config.get('rememorize_min_days',2)
                 max_days=self.config.get('rememorize_max_days',7)
                 runHook('ReMemorize.rescheduleAll',
-                    toBury,min_days,max_days,False) #no log, no ivl change
+                    toBury,min_days,max_days,log)
             else:
                 mw.col.db.executemany("""
 update cards set queue=-2,mod=%d,usn=%d where id=?"""%
