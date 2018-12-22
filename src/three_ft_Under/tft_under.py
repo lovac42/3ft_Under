@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/3FT_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.2
+# Version: 0.0.3
 
 
 from aqt import mw
@@ -41,16 +41,21 @@ class ThreeFeetUnder:
 
 
     def bury(self):
+        use_cid=self.config.get('use_card_creation_time',True)
         scan_days=self.config.get('scan_days',3)
-        cutoff=mw.col.sched.dayCutoff-(86400*scan_days)
-        cutoff*=1000 #convert to cid time
+        mod_cutoff=mw.col.sched.dayCutoff-(86400*scan_days)
+        if use_cid:
+            cid_cutoff=mod_cutoff*1000 #convert to cid time
+            sql="id > %d" % cid_cutoff
+        else:
+            sql="mod > %d" % mod_cutoff
 
         toBury=mw.col.db.list(
-            "select id from cards where type=0 and odid=0 and id > ?", cutoff)
+            "select id from cards where type=0 and odid=0 and %s"%sql)
 
         if toBury:
             rememorize=self.config.get('use_rememorize_to_reschedule',False)
-            if rememorize:
+            if rememorize and use_cid: #mod-time may lockup anki for processing
                 log=self.config.get('rememorize_log',True)
                 min_days=self.config.get('rememorize_min_days',2)
                 max_days=self.config.get('rememorize_max_days',7)
