@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/3FT_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.1
+# Version: 0.0.2
 
 
 from aqt import mw
@@ -46,7 +46,7 @@ class ThreeFeetUnder:
         cutoff*=1000 #convert to cid time
 
         toBury=mw.col.db.list(
-            "select id from cards where odid=0 and id > ?", cutoff)
+            "select id from cards where type=0 and odid=0 and id > ?", cutoff)
 
         if toBury:
             rememorize=self.config.get('use_rememorize_to_reschedule',False)
