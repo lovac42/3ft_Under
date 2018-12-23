@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright: (C) 2018 Lovac42
-# Support: https://github.com/lovac42/3FT_Under
+# Support: https://github.com/lovac42/3ft_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.3
+# Version: 0.0.4
 
 
 from aqt import mw
@@ -11,7 +11,7 @@ from anki.hooks import addHook, runHook
 from anki.utils import intTime
 from .config import *
 
-ADDON_NAME='three_ft_Under'
+ADDON_NAME='3ft_Under'
 
 
 class ThreeFeetUnder:
@@ -30,7 +30,7 @@ class ThreeFeetUnder:
                 break
         if not menu:
             menu=mw.form.menubar.addMenu('&Study')
-        qact=QAction("Bury 3FT Under", mw)
+        qact=QAction("Bury 3ft Under", mw)
         qact.triggered.connect(self.bury)
         menu.addAction(qact)
 
@@ -62,6 +62,7 @@ class ThreeFeetUnder:
                 runHook('ReMemorize.rescheduleAll',
                     toBury,min_days,max_days,log)
             else:
+                mw.checkpoint(_("Bury 3ft Under"))
                 mw.col.db.executemany("""
 update cards set queue=-2,mod=%d,usn=%d where id=?"""%
             (intTime(), mw.col.usn()), ([i] for i in toBury))
