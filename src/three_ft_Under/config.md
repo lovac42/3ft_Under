@@ -7,7 +7,7 @@ Days to scan for added cards.
 Auto scan on startup.
 
 ### use_card_creation_time
-If disabled, it will use the modification time. Checkng mod time is needed for imported cards, but may return a much larger set of search results. For this reason, ReMemorize mode is always disabled if mod time is used.
+If disabled, it will use the modification time. Checkng mod time is needed for imported cards, but may return a much larger set of search results.
 
 ### use_rememorize_to_reschedule
 https://ankiweb.net/shared/info/323586997

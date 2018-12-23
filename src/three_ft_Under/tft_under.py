@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/3ft_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.4
+# Version: 0.0.5
 
 
 from aqt import mw
@@ -50,12 +50,14 @@ class ThreeFeetUnder:
         else:
             sql="mod > %d" % mod_cutoff
 
-        toBury=mw.col.db.list(
-            "select id from cards where type=0 and odid=0 and %s"%sql)
+        toBury=mw.col.db.list("""
+select id from cards where type=0 and 
+queue=0 and odid=0 and %s"""%sql)
 
         if toBury:
+            mw.moveToState("deckBrowser")
             rememorize=self.config.get('use_rememorize_to_reschedule',False)
-            if rememorize and use_cid: #mod-time may lockup anki for processing
+            if rememorize:
                 log=self.config.get('rememorize_log',True)
                 min_days=self.config.get('rememorize_min_days',2)
                 max_days=self.config.get('rememorize_max_days',7)
