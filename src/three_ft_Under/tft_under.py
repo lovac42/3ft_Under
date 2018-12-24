@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Copyright: (C) 2018 Lovac42
-# Support: https://github.com/lovac42/3FT_Under
+# Support: https://github.com/lovac42/3ft_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.2
+# Version: 0.0.5
 
 
 from aqt import mw
@@ -11,7 +11,7 @@ from anki.hooks import addHook, runHook
 from anki.utils import intTime
 from .config import *
 
-ADDON_NAME='three_ft_Under'
+ADDON_NAME='3ft_Under'
 
 
 class ThreeFeetUnder:
@@ -30,7 +30,7 @@ class ThreeFeetUnder:
                 break
         if not menu:
             menu=mw.form.menubar.addMenu('&Study')
-        qact=QAction("Bury 3FT Under", mw)
+        qact=QAction("Bury 3ft Under", mw)
         qact.triggered.connect(self.bury)
         menu.addAction(qact)
 
@@ -41,14 +41,21 @@ class ThreeFeetUnder:
 
 
     def bury(self):
+        use_cid=self.config.get('use_card_creation_time',True)
         scan_days=self.config.get('scan_days',3)
-        cutoff=mw.col.sched.dayCutoff-(86400*scan_days)
-        cutoff*=1000 #convert to cid time
+        mod_cutoff=mw.col.sched.dayCutoff-(86400*scan_days)
+        if use_cid:
+            cid_cutoff=mod_cutoff*1000 #convert to cid time
+            sql="id > %d" % cid_cutoff
+        else:
+            sql="mod > %d" % mod_cutoff
 
-        toBury=mw.col.db.list(
-            "select id from cards where type=0 and odid=0 and id > ?", cutoff)
+        toBury=mw.col.db.list("""
+select id from cards where type=0 and 
+queue=0 and odid=0 and %s"""%sql)
 
         if toBury:
+            mw.moveToState("deckBrowser")
             rememorize=self.config.get('use_rememorize_to_reschedule',False)
             if rememorize:
                 log=self.config.get('rememorize_log',True)
@@ -57,6 +64,7 @@ class ThreeFeetUnder:
                 runHook('ReMemorize.rescheduleAll',
                     toBury,min_days,max_days,log)
             else:
+                mw.checkpoint(_("Bury 3ft Under"))
                 mw.col.db.executemany("""
 update cards set queue=-2,mod=%d,usn=%d where id=?"""%
             (intTime(), mw.col.usn()), ([i] for i in toBury))

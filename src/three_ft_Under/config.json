@@ -1,6 +1,7 @@
 {
     "scan_days": 3,
     "auto_bury_on_startup": true,
+    "use_card_creation_time": true,
     "use_rememorize_to_reschedule": false,
     "rememorize_log": true,
     "rememorize_min_days": 2,

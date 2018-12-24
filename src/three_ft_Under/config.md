@@ -1,10 +1,13 @@
 # 3ft Under: Bury Newly Added Cards
 
-### scan_days:
+### scan_days
 Days to scan for added cards.
 
-### auto_bury_on_startup:
+### auto_bury_on_startup
 Auto scan on startup.
+
+### use_card_creation_time
+If disabled, it will use the modification time. Checkng mod time is needed for imported cards, but may return a much larger set of search results.
 
 ### use_rememorize_to_reschedule
 https://ankiweb.net/shared/info/323586997
