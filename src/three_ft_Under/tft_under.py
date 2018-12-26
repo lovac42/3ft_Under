@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/3ft_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.6
+# Version: 0.0.6b
 
 
 import random
@@ -56,12 +56,7 @@ select id from cards where type=0 and
 queue=0 and odid=0 and %s"""%sql)
 
         if newCards:
-            remDict=self.config.get('rememorize')
-            rememorize=remDict.get('reschedule_with_rememorize',False)
-            if rememorize:
-                self.toReMemorize(newCards)
-            else:
-                self.toBury(newCards)
+            self.toBury(newCards)
             mw.reset() #update view
 
 
@@ -71,28 +66,6 @@ queue=0 and odid=0 and %s"""%sql)
 update cards set queue=-2,mod=%d,usn=%d where id=?"""%
             (intTime(), mw.col.usn()), ([i] for i in cids))
         mw.col.log(cids)
-
-
-    def toReMemorize(self, cids):
-        remDict=self.config.get('rememorize')
-        min_days=remDict.get('min_days',2)
-        max_days=remDict.get('max_days',7)
-        change_ivl=remDict.get('change_ivl',True)
-
-        mw.moveToState("deckBrowser")
-        if change_ivl:
-            log=remDict.get('log',True)
-            runHook('ReMemorize.rescheduleAll',
-                    cids,min_days,max_days,log)
-        else:
-            mw.checkpoint(_("Reschedule"))
-            mw.progress.start()
-            for cid in cids:
-                card=mw.col.getCard(cid)
-                due=random.randint(min_days,max_days)
-                runHook('ReMemorize.changeDue',card,due)
-            mw.progress.finish()
-        mw.autosave()
 
 
 tfu=ThreeFeetUnder()

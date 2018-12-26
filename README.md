@@ -1,9 +1,11 @@
 # 3ft_Under: Bury Newly Added Cards
 
-## About:
-This addon auto buries newly added cards (within n days) upon starting up Anki. Option in study menu for burying these cards manually. And the buried stats are synced to ankiweb for use with mobile devices. Anki resets buried stats everyday, so you need to run this addon once a day before syncing.
+https://ankiweb.net/shared/info/32017685
 
-Optionally, you can use ReMemorize to reschedule these cards. This is set in the configs and the addon ReMemorize must be installed.
+## About:
+This addon auto buries newly added cards (within n days) upon starting up Anki. Option in study menu for burying these cards manually. And the buried stats are synced to ankiweb for use with mobile devices. Anki resets buried stats everyday, so you need to run this addon once a day before syncing.  
 
 ## Configs:
-The default checks for and buries cards based on creation time. This will not work for imported cards, so checking for modification time was added. It needs to be turned on manually in addon options.
+The default checks for and buries cards based on creation time. This will not work for imported cards, so change the config options to check for modification time. This may return a large result set.
+
+Anki 2.0 users will need to use the <a href="https://ankiweb.net/shared/info/2058082580">backported addonManager21</a> to change config settings.  
