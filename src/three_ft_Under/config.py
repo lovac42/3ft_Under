@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Copyright: (C) 2018 Lovac42
+# Copyright: (C) 2018-2019 Lovac42
 # Support: https://github.com/lovac42/AddonManager21
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.2
+# Version: 0.0.4
 
 
 from aqt import mw
@@ -10,7 +10,10 @@ from aqt.qt import *
 from anki.hooks import addHook, runHook
 from codecs import open
 from anki.utils import json
-import os
+import os, collections
+
+from anki import version
+ANKI21=version.startswith("2.1.")
 
 
 class Config():
@@ -27,10 +30,12 @@ class Config():
         return self.config.get(key, default)
 
     def has(self, key):
-        return not self.config.get(key)==None
+        return self.config.get(key)!=None
 
 
     def _onProfileLoaded(self):
+        # wait for addonManager21 to load first.
+        # Timer is no longer necessary for newer versions of AddonManager21
         mw.progress.timer(300,self._loadConfig,False)
 
     def _loadConfig(self):
@@ -42,7 +47,7 @@ class Config():
         runHook(self.addonName+'.configLoaded')
 
     def _updateConfig(self, config):
-        self.config.update(config)
+        self.config=nestedUpdate(self.config,config)
         runHook(self.addonName+'.configUpdated')
 
     def _readConfig(self):
@@ -60,5 +65,19 @@ class Config():
             with open(path, 'r', encoding='utf-8') as f:
                 data=f.read()
             meta=json.loads(data)
-            conf.update(meta.get('config',{}))
+            conf=nestedUpdate(conf,meta.get('config',{}))
         return conf
+
+
+#From: https://stackoverflow.com/questions/3232943/
+def nestedUpdate(d, u):
+    if ANKI21:
+        itms=u.items()
+    else:
+        itms=u.iteritems()
+    for k, v in itms:
+        if isinstance(v, collections.Mapping):
+            d[k] = nestedUpdate(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d

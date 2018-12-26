@@ -2,9 +2,10 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/3ft_Under
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.5
+# Version: 0.0.6
 
 
+import random
 from aqt import mw
 from aqt.qt import *
 from anki.hooks import addHook, runHook
@@ -31,46 +32,67 @@ class ThreeFeetUnder:
         if not menu:
             menu=mw.form.menubar.addMenu('&Study')
         qact=QAction("Bury 3ft Under", mw)
-        qact.triggered.connect(self.bury)
+        qact.triggered.connect(self.checkStats)
         menu.addAction(qact)
 
 
     def onConfigLoaded(self):
         if self.config.get('auto_bury_on_startup', True):
-            self.bury()
+            self.checkStats()
 
 
-    def bury(self):
-        use_cid=self.config.get('use_card_creation_time',True)
+    def checkStats(self):
+        use_mod=self.config.get('use_modification_time',False)
         scan_days=self.config.get('scan_days',3)
         mod_cutoff=mw.col.sched.dayCutoff-(86400*scan_days)
-        if use_cid:
+        if use_mod:
+            sql="mod > %d" % mod_cutoff
+        else:
             cid_cutoff=mod_cutoff*1000 #convert to cid time
             sql="id > %d" % cid_cutoff
-        else:
-            sql="mod > %d" % mod_cutoff
 
-        toBury=mw.col.db.list("""
+        newCards=mw.col.db.list("""
 select id from cards where type=0 and 
 queue=0 and odid=0 and %s"""%sql)
 
-        if toBury:
-            mw.moveToState("deckBrowser")
-            rememorize=self.config.get('use_rememorize_to_reschedule',False)
+        if newCards:
+            remDict=self.config.get('rememorize')
+            rememorize=remDict.get('reschedule_with_rememorize',False)
             if rememorize:
-                log=self.config.get('rememorize_log',True)
-                min_days=self.config.get('rememorize_min_days',2)
-                max_days=self.config.get('rememorize_max_days',7)
-                runHook('ReMemorize.rescheduleAll',
-                    toBury,min_days,max_days,log)
+                self.toReMemorize(newCards)
             else:
-                mw.checkpoint(_("Bury 3ft Under"))
-                mw.col.db.executemany("""
-update cards set queue=-2,mod=%d,usn=%d where id=?"""%
-            (intTime(), mw.col.usn()), ([i] for i in toBury))
-                mw.col.log(toBury)
-
+                self.toBury(newCards)
             mw.reset() #update view
+
+
+    def toBury(self, cids):
+        mw.checkpoint(_("Bury 3ft Under"))
+        mw.col.db.executemany("""
+update cards set queue=-2,mod=%d,usn=%d where id=?"""%
+            (intTime(), mw.col.usn()), ([i] for i in cids))
+        mw.col.log(cids)
+
+
+    def toReMemorize(self, cids):
+        remDict=self.config.get('rememorize')
+        min_days=remDict.get('min_days',2)
+        max_days=remDict.get('max_days',7)
+        change_ivl=remDict.get('change_ivl',True)
+
+        mw.moveToState("deckBrowser")
+        if change_ivl:
+            log=remDict.get('log',True)
+            runHook('ReMemorize.rescheduleAll',
+                    cids,min_days,max_days,log)
+        else:
+            mw.checkpoint(_("Reschedule"))
+            mw.progress.start()
+            for cid in cids:
+                card=mw.col.getCard(cid)
+                due=random.randint(min_days,max_days)
+                runHook('ReMemorize.changeDue',card,due)
+            mw.progress.finish()
+        mw.autosave()
 
 
 tfu=ThreeFeetUnder()

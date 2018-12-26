@@ -1,9 +1,12 @@
 {
     "scan_days": 3,
     "auto_bury_on_startup": true,
-    "use_card_creation_time": true,
-    "use_rememorize_to_reschedule": false,
-    "rememorize_log": true,
-    "rememorize_min_days": 2,
-    "rememorize_max_days": 7
+    "use_modification_time": false,
+    "rememorize": {
+        "reschedule_with_rememorize": false,
+        "change_ivl": true,
+        "min_days": 2,
+        "max_days": 7,
+        "log": true
+    }
 }
